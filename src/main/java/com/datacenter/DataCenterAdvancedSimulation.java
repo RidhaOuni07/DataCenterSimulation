@@ -18,9 +18,6 @@ public class DataCenterAdvancedSimulation extends JFrame {
     private double energyCostPerWatt = 0.12;
     private double slaPenaltyPerMs = 0.05;
     private double revenuePerTask = 0.5;
-    private int minSchedulerLoad = 40;
-    private int maxSchedulerLoad = 100;
-    private double loadMultiplier = 1.0;
 
     // UI Components - Controls
     private JPanel serverPanel;
@@ -56,8 +53,6 @@ public class DataCenterAdvancedSimulation extends JFrame {
     private JCheckBox enableQoSCheckBox;
     private JSlider convergenceThresholdSlider;
     private JSlider maxIterationsSlider;
-    private JSlider loadMultiplierSlider;
-    private JLabel loadMultiplierLabel;
 
     // Simulation objects
     private Server[] servers;
@@ -75,7 +70,7 @@ public class DataCenterAdvancedSimulation extends JFrame {
     private boolean serverFailures = false;
     private boolean qosEnabled = true;
     private double convergenceThreshold = 0.01;
-    private int maxIterations = 10;
+    private int maxIterations = 5;
 
     // Server class with extended attributes
     static class Server {
@@ -858,7 +853,6 @@ public class DataCenterAdvancedSimulation extends JFrame {
         JPanel serverPanel = createLabeledControl("Servers:",
                 serverSlider = new JSlider(5, MAX_SERVERS, numServers),
                 serverValueLabel = new JLabel(numServers + " servers"));
-        serverSlider.setToolTipText("Total servers available - Leader strategy decides how many to activate");
         serverSlider.addChangeListener(e -> {
             numServers = serverSlider.getValue();
             serverValueLabel.setText(numServers + " servers");
@@ -872,18 +866,6 @@ public class DataCenterAdvancedSimulation extends JFrame {
         schedulerSlider.addChangeListener(e -> {
             numSchedulers = schedulerSlider.getValue();
             schedulerValueLabel.setText(numSchedulers + " schedulers");
-        });
-
-        // Max Iterations slider
-        JPanel iterationsPanel = createLabeledControl("Max Iterations:",
-                maxIterationsSlider = new JSlider(1, 50, maxIterations),
-                new JLabel(maxIterations + " iterations"));
-        maxIterationsSlider.addChangeListener(e -> {
-            maxIterations = maxIterationsSlider.getValue();
-            JLabel label = (JLabel) ((JPanel) iterationsPanel.getComponent(2)).getComponent(0);
-            if (label != null) {
-                label.setText(maxIterations + " iterations");
-            }
         });
 
         // Leader strategy
@@ -902,40 +884,12 @@ public class DataCenterAdvancedSimulation extends JFrame {
 
         row1.add(serverPanel);
         row1.add(schedulerPanel);
-        row1.add(iterationsPanel);
         row1.add(strategyPanel);
         row1.add(algoPanel);
 
         // Row 2: Advanced controls
         JPanel row2 = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
         row2.setBackground(new Color(44, 62, 80));
-
-        // Load multiplier slider
-        JPanel loadMultiplierPanel = new JPanel(new BorderLayout(3, 3));
-        loadMultiplierPanel.setBackground(new Color(44, 62, 80));
-        loadMultiplierPanel.setPreferredSize(new Dimension(150, 60));
-        JLabel loadMultLabel = new JLabel("Task Load:");
-        loadMultLabel.setForeground(Color.WHITE);
-        loadMultLabel.setFont(new Font("Arial", Font.PLAIN, 11));
-        loadMultiplierLabel = new JLabel(String.format("%.1fx (Light)", loadMultiplier));
-        loadMultiplierLabel.setForeground(Color.WHITE);
-        loadMultiplierLabel.setFont(new Font("Arial", Font.BOLD, 11));
-        loadMultiplierSlider = new JSlider(5, 30, (int)(loadMultiplier * 10));
-        loadMultiplierSlider.setBackground(new Color(44, 62, 80));
-        loadMultiplierSlider.setForeground(Color.WHITE);
-        loadMultiplierSlider.addChangeListener(e -> {
-            loadMultiplier = loadMultiplierSlider.getValue() / 10.0;
-            String intensity;
-            if (loadMultiplier < 1.0) intensity = "(Very Light)";
-            else if (loadMultiplier <= 1.5) intensity = "(Light)";
-            else if (loadMultiplier <= 2.0) intensity = "(Medium)";
-            else if (loadMultiplier <= 2.5) intensity = "(Heavy)";
-            else intensity = "(Very Heavy)";
-            loadMultiplierLabel.setText(String.format("%.1fx %s", loadMultiplier, intensity));
-        });
-        loadMultiplierPanel.add(loadMultLabel, BorderLayout.NORTH);
-        loadMultiplierPanel.add(loadMultiplierSlider, BorderLayout.CENTER);
-        loadMultiplierPanel.add(loadMultiplierLabel, BorderLayout.SOUTH);
 
         // Load pattern
         JPanel loadPanel = createLabeledComboBox("Load Pattern:",
@@ -1010,7 +964,6 @@ public class DataCenterAdvancedSimulation extends JFrame {
         buttonPanel.add(advancedSettingsButton);
         buttonPanel.add(resetButton);
 
-        row2.add(loadMultiplierPanel);
         row2.add(loadPanel);
         row2.add(serverTypePanel);
         row2.add(goalPanel);
@@ -1068,9 +1021,9 @@ public class DataCenterAdvancedSimulation extends JFrame {
     private void showAdvancedSettings() {
         JDialog dialog = new JDialog(this, "Advanced Settings", true);
         dialog.setLayout(new BorderLayout(10, 10));
-        dialog.setSize(500, 500);
+        dialog.setSize(500, 400);
 
-        JPanel settingsPanel = new JPanel(new GridLayout(10, 2, 10, 10));
+        JPanel settingsPanel = new JPanel(new GridLayout(8, 2, 10, 10));
         settingsPanel.setBorder(new EmptyBorder(15, 15, 15, 15));
 
         // Energy cost
@@ -1088,16 +1041,6 @@ public class DataCenterAdvancedSimulation extends JFrame {
         JTextField revenueField = new JTextField(String.valueOf(revenuePerTask));
         settingsPanel.add(revenueField);
 
-        // Min scheduler load
-        settingsPanel.add(new JLabel("Min Scheduler Load (t/s):"));
-        JTextField minLoadField = new JTextField(String.valueOf(minSchedulerLoad));
-        settingsPanel.add(minLoadField);
-
-        // Max scheduler load
-        settingsPanel.add(new JLabel("Max Scheduler Load (t/s):"));
-        JTextField maxLoadField = new JTextField(String.valueOf(maxSchedulerLoad));
-        settingsPanel.add(maxLoadField);
-
         // Convergence threshold
         settingsPanel.add(new JLabel("Convergence Threshold ($):"));
         convergenceThresholdSlider = new JSlider(1, 100, (int)(convergenceThreshold * 100));
@@ -1113,7 +1056,7 @@ public class DataCenterAdvancedSimulation extends JFrame {
 
         // Max iterations
         settingsPanel.add(new JLabel("Max Iterations:"));
-        maxIterationsSlider = new JSlider(1, 50, maxIterations);
+        maxIterationsSlider = new JSlider(1, 20, maxIterations);
         JLabel iterLabel = new JLabel(String.valueOf(maxIterations));
         maxIterationsSlider.addChangeListener(e -> {
             maxIterations = maxIterationsSlider.getValue();
@@ -1132,16 +1075,7 @@ public class DataCenterAdvancedSimulation extends JFrame {
                 energyCostPerWatt = Double.parseDouble(energyCostField.getText());
                 slaPenaltyPerMs = Double.parseDouble(slaPenaltyField.getText());
                 revenuePerTask = Double.parseDouble(revenueField.getText());
-                minSchedulerLoad = Integer.parseInt(minLoadField.getText());
-                maxSchedulerLoad = Integer.parseInt(maxLoadField.getText());
-
-                if (minSchedulerLoad >= maxSchedulerLoad) {
-                    JOptionPane.showMessageDialog(dialog, "Min load must be less than max load!");
-                    return;
-                }
-
                 log("Advanced settings updated");
-                log("Scheduler load range: " + minSchedulerLoad + "-" + maxSchedulerLoad + " tasks/s");
                 dialog.dispose();
             } catch (NumberFormatException ex) {
                 JOptionPane.showMessageDialog(dialog, "Invalid number format!");
@@ -1152,7 +1086,7 @@ public class DataCenterAdvancedSimulation extends JFrame {
         buttonPanel.add(saveButton);
         buttonPanel.add(cancelButton);
 
-        dialog.add(new JLabel("Configure Economic Parameters & Load Settings", SwingConstants.CENTER),
+        dialog.add(new JLabel("Configure Economic Parameters", SwingConstants.CENTER),
                 BorderLayout.NORTH);
         dialog.add(settingsPanel, BorderLayout.CENTER);
         dialog.add(buttonPanel, BorderLayout.SOUTH);
@@ -1166,7 +1100,7 @@ public class DataCenterAdvancedSimulation extends JFrame {
         mainPanel.setBackground(new Color(236, 240, 241));
         mainPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
 
-        JLabel title = new JLabel("Server Status (Available Pool) - Leader Activates Subset");
+        JLabel title = new JLabel("Server Status, Properties & Utilities");
         title.setFont(new Font("Arial", Font.BOLD, 14));
         title.setBorder(new EmptyBorder(0, 0, 10, 0));
 
@@ -1285,7 +1219,7 @@ public class DataCenterAdvancedSimulation extends JFrame {
         revenueLabel = createMetricLabel("Revenue: $0.00", new Color(26, 188, 156));
         profitLabel = createMetricLabel("Profit: $0.00", new Color(46, 204, 113));
         responseTimeLabel = createMetricLabel("Response: 0 ms", new Color(155, 89, 182));
-        activeServersLabel = createMetricLabel("Active: 0/" + numServers + " available", new Color(243, 156, 18));
+        activeServersLabel = createMetricLabel("Active: 0/" + numServers, new Color(243, 156, 18));
         equilibriumLabel = createMetricLabel("Equilibrium: Pending", new Color(149, 165, 166));
 
         panel.add(title);
@@ -1384,9 +1318,8 @@ public class DataCenterAdvancedSimulation extends JFrame {
         String pattern = (String) loadPatternComboBox.getSelectedItem();
 
         for (int i = 0; i < numSchedulers; i++) {
-            double baseArrivalRate = minSchedulerLoad + random.nextInt(maxSchedulerLoad - minSchedulerLoad + 1);
-            double adjustedArrivalRate = baseArrivalRate * loadMultiplier;
-            schedulers[i] = new Scheduler(i, adjustedArrivalRate, MAX_SERVERS, pattern);
+            double arrivalRate = 40 + random.nextInt(60);
+            schedulers[i] = new Scheduler(i, arrivalRate, MAX_SERVERS, pattern);
         }
 
         // Update server properties display
@@ -1397,8 +1330,6 @@ public class DataCenterAdvancedSimulation extends JFrame {
 
         log("System initialized: " + numServers + " servers, " + numSchedulers + " schedulers");
         log("Configuration: " + serverType + " servers, " + pattern + " load pattern");
-        log("Task load: " + String.format("%.1fx multiplier (%.0f-%.0f tasks/s per scheduler)",
-                loadMultiplier, minSchedulerLoad * loadMultiplier, maxSchedulerLoad * loadMultiplier));
     }
 
     private void updateServerPropertiesDisplay() {
@@ -1478,7 +1409,6 @@ public class DataCenterAdvancedSimulation extends JFrame {
         // Step 3: Best Response (multiple iterations)
         for (int i = 1; i <= maxIterations; i++) {
             fullLog.append(gameEngine.step3_FollowersBestResponse(i, allocationAlgorithm)).append("\n\n");
-            log("Completed iteration " + i + " of " + maxIterations);
         }
 
         // Step 4: Nash Equilibrium
@@ -1539,7 +1469,7 @@ public class DataCenterAdvancedSimulation extends JFrame {
                 if (currentStep - 2 < maxIterations) {
                     stepResult = gameEngine.step3_FollowersBestResponse(currentStep - 1, allocationAlgorithm);
                     updateUI();
-                    log("Step " + (currentStep + 1) + ": Best response iteration " + (currentStep - 1) + " of " + maxIterations);
+                    log("Step " + (currentStep + 1) + ": Best response iteration " + (currentStep - 1));
                 } else {
                     currentStep = maxIterations + 1;
                 }
@@ -1643,7 +1573,7 @@ public class DataCenterAdvancedSimulation extends JFrame {
 
         responseTimeLabel.setText("Response: " +
                 String.format("%.4f", (totalResponseTime / numSchedulers) * 1000) + " ms");
-        activeServersLabel.setText("Active: " + activeCount + "/" + numServers + " available");
+        activeServersLabel.setText("Active: " + activeCount + "/" + numServers);
     }
 
     private void updateSingleServerProperties(int index, Server server) {
@@ -1695,9 +1625,9 @@ public class DataCenterAdvancedSimulation extends JFrame {
         serverPanel.repaint();
 
         // Update the active servers label
-        activeServersLabel.setText("Active: 0/" + numServers + " available");
+        activeServersLabel.setText("Active: 0/" + numServers);
 
-        log("Available servers set to: " + numServers + " (Leader will decide how many to activate)");
+        log("Server count adjusted to: " + numServers);
     }
 
     private void resetSimulation() {
@@ -1716,7 +1646,7 @@ public class DataCenterAdvancedSimulation extends JFrame {
         revenueLabel.setText("Revenue: $0.00");
         profitLabel.setText("Profit: $0.00");
         responseTimeLabel.setText("Response: 0 ms");
-        activeServersLabel.setText("Active: 0/" + numServers + " available");
+        activeServersLabel.setText("Active: 0/" + numServers);
         equilibriumLabel.setText("Equilibrium: Pending");
         equilibriumLabel.setForeground(new Color(149, 165, 166));
 
