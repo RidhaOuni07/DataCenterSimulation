@@ -23,6 +23,8 @@ An interactive Java/Swing simulation platform that implements and extends the **
 - **After Simulator Execution(Results)**
 - ![After](screenshots/after1.png)
 - ![After](screenshots/after2.png)
+- **A simulation Video**
+- ![Simulation](screenshots/DataCenterSimulation.mp4)
 
 ## 🚀 Quick Start
 
