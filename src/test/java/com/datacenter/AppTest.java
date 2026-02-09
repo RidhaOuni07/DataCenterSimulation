@@ -29,10 +29,17 @@ public class AppTest
     }
 
     /**
-     * Rigourous Test :-)
+     * Test that simulation initialization doesn't throw exceptions
      */
-    public void testApp()
+    public void testSimulationInitialization()
     {
-        assertTrue( true );
+        try {
+            // DataCenterAdvancedSimulation creates a JFrame, which might not work in headless environments
+            // But we can test if we can at least instantiate the core simulation logic indirectly
+            // or if the class exists.
+            assertNotNull(new Server(0, 100, 50, 200, "Standard"));
+        } catch (Exception e) {
+            fail("Initialization failed: " + e.getMessage());
+        }
     }
 }
