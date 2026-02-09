@@ -18,8 +18,11 @@ An interactive Java/Swing simulation platform that implements and extends the **
 
 ## 🖥️ Screenshots
 
-![GUI Overview](screenshot-main.png)  
-*(add your screenshots to the repo and update the links)*
+- **Before Simulator Execution**
+- ![Before](screenshots/before.png)
+- **After Simulator Execution(Results)**
+- ![After](screenshots/after1.png)
+- ![After](screenshots/after2.png)
 
 ## 🚀 Quick Start
 
@@ -30,7 +33,7 @@ An interactive Java/Swing simulation platform that implements and extends the **
 
 ```bash
 # Clone the repo
-git clone https://github.com/yourusername/DataCenter-Stackelberg-Simulator.git
+git clone https://github.com/RidhaOuni07/DataCenterSimulation.git
 cd DataCenter-Stackelberg-Simulator
 
 # Compile
