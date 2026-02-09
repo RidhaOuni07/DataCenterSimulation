@@ -34,10 +34,12 @@ An interactive Java/Swing simulation platform that implements and extends the **
 ```bash
 # Clone the repo
 git clone https://github.com/RidhaOuni07/DataCenterSimulation.git
-cd DataCenter-Stackelberg-Simulator
+cd DataCenterSimulation
 
 # Compile
 javac -d bin src/com/datacenter/*.java
 
 # Run
 java -cp bin com.datacenter.DataCenterAdvancedSimulation
+````
+### Or just use an IDE such as Intellij
